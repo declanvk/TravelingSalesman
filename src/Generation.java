@@ -15,13 +15,14 @@ import java.util.Random;
  */
 class Generation {
 
-	private static final int MUTATION_RATE = 100;
+	private static final int MUTATION_CHANCE = 100;
+	private static final int MUTATION_NUM = 1;
+	private static final float MUTATION_PERCENT = (float) 0.07;
 	public static int POP_SIZE; // # of chromosomes in a generation
 	public static boolean MUTATION, ELITISM;
 	public Chromosome[] chromosomes;
 	public Chromosome firstRoute;
 	public Chromosome bestRoute;
-	private HashSet visited;
 	private Random rGen = new Random();
 	private boolean DEBUG = false;
 	public int number = 0;
@@ -84,18 +85,17 @@ class Generation {
 	}
 
 	public void breed() {
-		//TODO clever code needed here
+		// TODO clever code needed here
 	}
 
 	public void mutate() {
-		//TODO clever code needed here
-		if(rGen.nextInt(MUTATION_RATE) < 10) {
-			
-		}
+		if (rGen.nextInt(MUTATION_CHANCE) < 10)
+			for (int i = 0; i < MUTATION_NUM; i++)
+				chromosomes[rGen.nextInt(chromosomes.length)].mutate(MUTATION_PERCENT);
 	}
 
 	public void select() {
-		//TODO clever code needed here
+		// TODO clever code needed here
 	}
 
 	public String toString() {

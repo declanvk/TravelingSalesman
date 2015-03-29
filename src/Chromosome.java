@@ -9,9 +9,6 @@ public class Chromosome implements Comparable<Chromosome> {
 
 	// the genes
 	private ArrayList<City> cities = new ArrayList<City>();
-
-	private boolean DEBUG = false;
-
 	private ArrayList<City> original = new ArrayList<City>(); // array for reset
 																// function
 	Random rGen = new Random();
@@ -79,10 +76,10 @@ public class Chromosome implements Comparable<Chromosome> {
 		Chromosome copy = new Chromosome(cities);
 		return copy;
 	}
-	
+
 	public Chromosome breed(Chromosome c) {
 		Chromosome child = new Chromosome();
-		
+			
 		return null;
 	}
 
@@ -103,7 +100,34 @@ public class Chromosome implements Comparable<Chromosome> {
 		cities.add(c);
 	}
 
+	@Override
+	public boolean equals(Object obj) {
+		Chromosome c = (Chromosome) obj;
+		if (this.cities.size() != c.cities.size())
+			return false;
+		else
+			for (int i = 0; i < cities.size(); i++)
+				if (!this.cities.get(i).equals(c.cities.get(i)))
+					return false;
+		return true;
+	}
+
 	public String toString() {
 		return new Double(pathLength).toString();
+	}
+
+	public void mutate(float mutationPercent) {
+		int numToMutate = Math.round(mutationPercent * cities.size());
+		int a = 0;
+		int b = 0;
+		for (int i = 0; i < numToMutate; i++) {
+			do {
+				a = rGen.nextInt(cities.size());
+				b = rGen.nextInt(cities.size());
+			} while (a != b);
+			City temp = cities.get(b);
+			cities.set(b, cities.get(a));
+			cities.set(a, temp);
+		}
 	}
 }

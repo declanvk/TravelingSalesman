@@ -9,7 +9,6 @@ import java.awt.Point;
 public class City {
 
 	private final Point location;
-	private City next; // next in list
 
 	public City() {
 		this(0, 0);
@@ -35,19 +34,10 @@ public class City {
 		return location.y;
 	}
 
-	public City getNext() {
-		return next;
+	@Override
+	public boolean equals(Object obj) {
+		City c = (City) obj;
+		return c.location.equals(this.location);
 	}
 
-	public void setNext(City next) {
-		this.next = next;
-	}
-
-	public void setyLoc(int y) {
-		location.move(location.x, y);
-	}
-
-	public void setxLoc(int x) {
-		location.move(x, location.y);
-	}
 }
