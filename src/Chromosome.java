@@ -28,7 +28,7 @@ public class Chromosome implements Comparable<Chromosome> {
 	}
 
 	public void addCity(int x, int y) {
-		City c = new City(x, y, null, null);
+		City c = new City(x, y);
 		cities.add(c);
 		recalculateNeighbors();
 		pathLength = calculateFitness();
@@ -37,7 +37,7 @@ public class Chromosome implements Comparable<Chromosome> {
 	public City getCity(int i) {
 		return cities.get(i);
 	}
-	
+
 	public int size() {
 		return cities.size();
 	}
@@ -60,7 +60,7 @@ public class Chromosome implements Comparable<Chromosome> {
 			myGenes.set(geneA, myGenes.get(geneB));
 			myGenes.set(geneB, tempNode);
 		}
-
+		//TODO
 		return new Chromosome(myGenes);
 	}
 
@@ -81,35 +81,38 @@ public class Chromosome implements Comparable<Chromosome> {
 		City[] a = this.cities.toArray(new City[this.cities.size()]);
 		City[] b = other.cities.toArray(new City[other.cities.size()]);
 
-		if(a.length != b.length)
+		if (a.length != b.length)
 			return null;
-		
+
 		City[][] work = new City[a.length][a.length - 1];
+
 		
-		//for(int i = 0; i < a.length; i++)
-		//	work
-		
+
 		return null;
 	}
 
 	public double fitness() {
 		return pathLength;
 	}
-	
+
 	private void recalculateNeighbors() {
 		City temp = null;
-		for(int i = 0; i < cities.size(); i++) {
+		for (int i = 0; i < cities.size(); i++) {
 			temp = cities.get(i);
-			temp.setPrev(cities.get(((((i - 1) % 2) + 2) % 2)));
-			temp.setNext(cities.get(((((i + 1) % 2) + 2) % 2)));
+			temp.setNeighbors(this.hashCode(),
+					cities.get(((((i - 1) % 2) + 2) % 2)),
+					cities.get(((((i + 1) % 2) + 2) % 2)));
 		}
 	}
 
 	private double calculateFitness() {
 		double totalDistance = 0;
-		for (int i = 0; i < cities.size(); i++)
-			totalDistance += cities.get(i).distanceTo(
-					cities.get((i + 1) % cities.size()));
+		City temp;
+		for (int i = 0; i < cities.size(); i++) {
+			temp = cities.get(i);
+			totalDistance += temp.distanceTo(temp.getNeighbors(this.hashCode())
+					.getNext());
+		}
 		return totalDistance;
 	}
 
