@@ -176,7 +176,7 @@ public class TSPDisplay extends JFrame {
 					mouse = e.getPoint();
 					if( route == null )
 						route = new Chromosome();
-					route.append(mouse.x, mouse.y);
+					route.addCity(mouse.x, mouse.y);
 					System.out.println( "mousepressed");
 					
 					myGen = new Generation( route );					

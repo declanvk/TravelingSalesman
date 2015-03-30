@@ -1,5 +1,4 @@
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Random;
 
 /*
@@ -18,13 +17,13 @@ class Generation {
 	private static final int MUTATION_CHANCE = 100;
 	private static final int MUTATION_NUM = 1;
 	private static final float MUTATION_PERCENT = (float) 0.07;
+	private static final int SELECT = 8;
 	public static int POP_SIZE; // # of chromosomes in a generation
 	public static boolean MUTATION, ELITISM;
 	public Chromosome[] chromosomes;
 	public Chromosome firstRoute;
 	public Chromosome bestRoute;
 	private Random rGen = new Random();
-	private boolean DEBUG = false;
 	public int number = 0;
 
 	public Generation() {
@@ -40,34 +39,21 @@ class Generation {
 		chromosomes[0] = ch;
 		bestRoute = ch;
 		firstRoute = ch;
-		for (int i = 1; i < POP_SIZE; i++) {
+		for (int i = 1; i < POP_SIZE; i++)
 			chromosomes[i] = ch.duplicate().scramble();
-			if (DEBUG)
-				System.out.println("gen " + chromosomes[i]);
-		}
-
-		if (DEBUG)
-			System.out.println(this);
-		if (DEBUG)
-			System.out.println(bestRoute.fitness());
 	}
 
 	public void nextGen() {
 		number++;
 		rank();
 
-		select();
-
-		breed();
+		breed(select());
 
 		mutate();
 
 		rank();
 
 		bestRoute = chromosomes[0];
-		if (DEBUG)
-			System.out.println(this);
-
 	}
 
 	public double getFitness() {
@@ -84,8 +70,15 @@ class Generation {
 		Arrays.sort(chromosomes);
 	}
 
-	public void breed() {
-		// TODO clever code needed here
+	public void breed(Chromosome[] par) {
+		int i = 0;
+		Chromosome[] temp = new Chromosome[(SELECT * SELECT) - SELECT];
+		for(int x = 0; x < par.length; x++)
+			for(int y = 0; y < par.length; y++)
+				if(x != y)
+					temp[i++] = par[x].breed(par[y]);
+		Arrays.sort(temp);
+		System.arraycopy(temp, 0, chromosomes, SELECT, SELECT);
 	}
 
 	public void mutate() {
@@ -94,14 +87,16 @@ class Generation {
 				chromosomes[rGen.nextInt(chromosomes.length)].mutate(MUTATION_PERCENT);
 	}
 
-	public void select() {
-		// TODO clever code needed here
+	public Chromosome[] select() {
+		Chromosome[] temp = new Chromosome[SELECT];
+		System.arraycopy(chromosomes, (chromosomes.length - SELECT) - 1, temp, 0, SELECT);
+		return temp;
 	}
 
 	public String toString() {
 		String s = "";
 		for (int i = 0; i < chromosomes.length; i++)
-			s += chromosomes[i].fitness() + "\n ";
+			s += chromosomes[i].fitness() + "\t";
 		return s;
 	}
 }
