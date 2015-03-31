@@ -20,6 +20,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -60,6 +61,7 @@ public class TSPDisplay extends JFrame {
 	private double route_length = 0; 				// length of route
 
 	private Generation myGen;
+	private ArrayList<City> points = new ArrayList<City>(); 
 
 	public TSPDisplay(int p, int pVert, int pHor, boolean e, boolean m) {
 		pop_size = p;
@@ -173,12 +175,9 @@ public class TSPDisplay extends JFrame {
 					
 					Graphics g = parent.plot[0].getGraphics();
 					mouse = e.getPoint();
-					if( route == null )
-						route = new Chromosome();
-					route.addCity(mouse.x, mouse.y);
-					System.out.println( "mousepressed");
-					
-					myGen = new Generation( route );					
+					points.add(new City(mouse.x, mouse.y));
+					route = new Chromosome(points);
+					myGen = new Generation(route);					
 					route_length = myGen.getFitness();
 					parent.plot[0].update(g);
 					display_map_status(0);

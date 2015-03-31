@@ -16,22 +16,13 @@ public class Chromosome implements Comparable<Chromosome> {
 
 	private final int key;
 
-	public Chromosome() {
-		this(new ArrayList<City>());
-	}
-
 	public Chromosome(ArrayList<City> or) {
 		this.cities = or;
 		recalculateNeighbors();
 		this.pathLength = calculateFitness();
 		this.key = this.hashCode();
-	}
-
-	public void addCity(int x, int y) {
-		City c = new City(x, y);
-		cities.add(c);
-		recalculateNeighbors();
-		pathLength = calculateFitness();
+		System.out.println(key);
+		System.out.println(this.hashCode());
 	}
 
 	public City getCity(int i) {
@@ -123,6 +114,8 @@ public class Chromosome implements Comparable<Chromosome> {
 
 	private void recalculateNeighbors() {
 		City temp = null;
+		
+		System.out.println(this.hashCode());
 		System.out.println("Re: " + key);
 		for (int i = 0; i < cities.size(); i++) {
 			temp = cities.get(i);
@@ -160,6 +153,8 @@ public class Chromosome implements Comparable<Chromosome> {
 			cities.set(b, cities.get(a));
 			cities.set(a, temp);
 		}
+		
+		recalculateNeighbors();
 	}
 
 	public void clearCities() {
