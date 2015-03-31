@@ -14,15 +14,10 @@ public class Chromosome implements Comparable<Chromosome> {
 	private final Random rGen = new Random();
 	private double pathLength;
 
-	private final int key;
-
 	public Chromosome(ArrayList<City> or) {
 		this.cities = or;
 		recalculateNeighbors();
 		this.pathLength = calculateFitness();
-		this.key = this.hashCode();
-		System.out.println(key);
-		System.out.println(this.hashCode());
 	}
 
 	public City getCity(int i) {
@@ -73,8 +68,8 @@ public class Chromosome implements Comparable<Chromosome> {
 		City.CLink aLink = null;
 		City.CLink bLink = null;
 		for (City o : other.cities) {
-			aLink = o.getNeighbors(this.key);
-			bLink = o.getNeighbors(other.key);
+			aLink = o.getNeighbors(this.hashCode());
+			bLink = o.getNeighbors(other.hashCode());
 
 			containers[i].add(aLink.getNext());
 			containers[i].add(aLink.getPrev());
@@ -114,13 +109,11 @@ public class Chromosome implements Comparable<Chromosome> {
 
 	private void recalculateNeighbors() {
 		City temp = null;
-		
-		System.out.println(this.hashCode());
-		System.out.println("Re: " + key);
+
 		for (int i = 0; i < cities.size(); i++) {
 			temp = cities.get(i);
 			temp.setNeighbors(
-					key,
+					this.hashCode(),
 					cities.get(((((i - 1) % cities.size()) + cities.size()) % cities
 							.size())),
 					cities.get(((((i + 1) % cities.size()) + cities.size()) % cities
@@ -131,7 +124,7 @@ public class Chromosome implements Comparable<Chromosome> {
 	private double calculateFitness() {
 		double totalDistance = 0;
 		for (int i = 0; i < cities.size(); i++)
-			totalDistance += cities.get(i).getNeighbors(key).getDistNext();
+			totalDistance += cities.get(i).getNeighbors(this.hashCode()).getDistNext();
 
 		return totalDistance;
 	}
@@ -159,6 +152,6 @@ public class Chromosome implements Comparable<Chromosome> {
 
 	public void clearCities() {
 		for (City c : cities)
-			c.removeNeighbor(key);
+			c.removeNeighbor(this.hashCode());
 	}
 }
