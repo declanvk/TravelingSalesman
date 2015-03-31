@@ -1,5 +1,5 @@
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Random;
 
 public class Chromosome implements Comparable<Chromosome> {
@@ -9,22 +9,22 @@ public class Chromosome implements Comparable<Chromosome> {
 	public static boolean MUTATION, ELITISM;
 
 	// the genes
-	private ArrayList<City> cities = new ArrayList<City>();
-	private ArrayList<City> original = new ArrayList<City>(); // array for reset
-																// function
-	Random rGen = new Random();
+	private final ArrayList<City> cities;
+
+	private final Random rGen = new Random();
 	private double pathLength;
 
+	private final int key;
+
 	public Chromosome() {
-		cities = new ArrayList<City>();
-		this.pathLength = 0;
+		this(new ArrayList<City>());
 	}
 
 	public Chromosome(ArrayList<City> or) {
-		original = or;
-		cities = or;
+		this.cities = or;
 		recalculateNeighbors();
 		this.pathLength = calculateFitness();
+		this.key = this.hashCode();
 	}
 
 	public void addCity(int x, int y) {
@@ -60,7 +60,7 @@ public class Chromosome implements Comparable<Chromosome> {
 			myGenes.set(geneA, myGenes.get(geneB));
 			myGenes.set(geneB, tempNode);
 		}
-		//TODO
+		// TODO
 		return new Chromosome(myGenes);
 	}
 
@@ -72,23 +72,49 @@ public class Chromosome implements Comparable<Chromosome> {
 			return o.fitness() > this.fitness() ? -1 : 1;
 	}
 
-	public Chromosome duplicate() {
-		Chromosome copy = new Chromosome(cities);
-		return copy;
-	}
-
 	public Chromosome breed(Chromosome other) {
-		City[] a = this.cities.toArray(new City[this.cities.size()]);
-		City[] b = other.cities.toArray(new City[other.cities.size()]);
-
-		if (a.length != b.length)
+		if (this.cities.size() != other.cities.size())
 			return null;
 
-		City[][] work = new City[a.length][a.length - 1];
+		HashSet<City>[] containers = new HashSet[other.cities.size()];
 
-		
+		int i = 0;
+		City.CLink aLink = null;
+		City.CLink bLink = null;
+		for (City o : other.cities) {
+			aLink = o.getNeighbors(this.key);
+			bLink = o.getNeighbors(other.key);
 
-		return null;
+			containers[i].add(aLink.getNext());
+			containers[i].add(aLink.getPrev());
+			containers[i].add(bLink.getNext());
+			containers[i].add(bLink.getPrev());
+
+			i++;
+		}
+
+		HashSet<City> chosen = null;
+		ArrayList<City> k = new ArrayList<>();
+		City n = rGen.nextBoolean() ? this.cities.get(0) : other.cities.get(0);
+		while (k.size() < other.cities.size()) {
+			k.add(n);
+			chosen = null;
+			for (HashSet<City> o : containers)
+				if (o.contains(n)) {
+					o.remove(n);
+					if (chosen == null)
+						chosen = o;
+					else if (chosen.size() == o.size())
+						chosen = rGen.nextBoolean() ? chosen : o;
+					else if (chosen.size() > o.size())
+						chosen = o;
+				}
+			int p = 0;
+			do {
+				n = (City) chosen.toArray()[p];
+			} while (k.contains(n));
+		}
+		return new Chromosome(k);
 	}
 
 	public double fitness() {
@@ -97,35 +123,24 @@ public class Chromosome implements Comparable<Chromosome> {
 
 	private void recalculateNeighbors() {
 		City temp = null;
+		System.out.println("Re: " + key);
 		for (int i = 0; i < cities.size(); i++) {
 			temp = cities.get(i);
-			temp.setNeighbors(this.hashCode(),
-					cities.get(((((i - 1) % 2) + 2) % 2)),
-					cities.get(((((i + 1) % 2) + 2) % 2)));
+			temp.setNeighbors(
+					key,
+					cities.get(((((i - 1) % cities.size()) + cities.size()) % cities
+							.size())),
+					cities.get(((((i + 1) % cities.size()) + cities.size()) % cities
+							.size())));
 		}
 	}
 
 	private double calculateFitness() {
 		double totalDistance = 0;
-		City temp;
-		for (int i = 0; i < cities.size(); i++) {
-			temp = cities.get(i);
-			totalDistance += temp.distanceTo(temp.getNeighbors(this.hashCode())
-					.getNext());
-		}
-		return totalDistance;
-	}
+		for (int i = 0; i < cities.size(); i++)
+			totalDistance += cities.get(i).getNeighbors(key).getDistNext();
 
-	@Override
-	public boolean equals(Object obj) {
-		Chromosome c = (Chromosome) obj;
-		if (this.cities.size() != c.cities.size())
-			return false;
-		else
-			for (int i = 0; i < cities.size(); i++)
-				if (!this.cities.get(i).equals(c.cities.get(i)))
-					return false;
-		return true;
+		return totalDistance;
 	}
 
 	public String toString() {
@@ -145,5 +160,10 @@ public class Chromosome implements Comparable<Chromosome> {
 			cities.set(b, cities.get(a));
 			cities.set(a, temp);
 		}
+	}
+
+	public void clearCities() {
+		for (City c : cities)
+			c.removeNeighbor(key);
 	}
 }

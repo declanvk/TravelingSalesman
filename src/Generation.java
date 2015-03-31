@@ -28,8 +28,6 @@ class Generation {
 
 	public Generation() {
 		chromosomes = new Chromosome[POP_SIZE];
-		for (int i = 0; i < POP_SIZE; i++)
-			chromosomes[i] = new Chromosome();
 		bestRoute = null;
 		firstRoute = null;
 	}
@@ -40,7 +38,7 @@ class Generation {
 		bestRoute = ch;
 		firstRoute = ch;
 		for (int i = 1; i < POP_SIZE; i++)
-			chromosomes[i] = ch.duplicate().scramble();
+			chromosomes[i] = ch.scramble();
 	}
 
 	public void nextGen() {
@@ -89,7 +87,9 @@ class Generation {
 
 	public Chromosome[] select() {
 		Chromosome[] temp = new Chromosome[SELECT];
-		System.arraycopy(chromosomes, (chromosomes.length - SELECT) - 1, temp, 0, SELECT);
+		System.arraycopy(chromosomes, 0, temp, 0, SELECT);
+		for(int i = SELECT; i < chromosomes.length; i++)
+			chromosomes[i].clearCities();
 		return temp;
 	}
 

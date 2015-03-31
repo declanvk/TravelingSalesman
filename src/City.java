@@ -9,23 +9,36 @@ import java.util.HashMap;
  */
 public class City {
 
-	public static int COUNT_INSTANCE = 0;
-
 	protected class CLink {
+
 		private final City prev;
+		private final double distPrev;
+
 		private final City next;
+		private final double distNext;
 
 		public CLink(City p, City n) {
 			this.prev = p;
+			this.distPrev = City.this.distanceTo(prev);
+
 			this.next = n;
+			this.distNext = City.this.distanceTo(next);
 		}
 
 		public City getPrev() {
 			return prev;
 		}
 
+		public double getDistPrev() {
+			return distPrev;
+		}
+
 		public City getNext() {
 			return next;
+		}
+
+		public double getDistNext() {
+			return distNext;
 		}
 	}
 
@@ -39,11 +52,6 @@ public class City {
 
 	public City(int x, int y) {
 		this.location = new Point(x, y);
-		COUNT_INSTANCE++;
-	}
-
-	public double distanceTo(City c) {
-		return location.distance(c.location);
 	}
 
 	public String toString() {
@@ -59,6 +67,10 @@ public class City {
 	}
 
 	public void setNeighbors(int key, City p, City n) {
+		if (neighbors.containsKey(key))
+			System.out.println("Contains " + key);
+		else
+			System.out.println("Dontains " + key);
 		neighbors.put(key, new City.CLink(p, n));
 	}
 
@@ -76,4 +88,7 @@ public class City {
 		return c.location.equals(this.location);
 	}
 
+	private double distanceTo(City c) {
+		return location.distance(c.location);
+	}
 }

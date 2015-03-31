@@ -38,7 +38,6 @@ public class TSPDisplay extends JFrame {
 	Menu comp_menu = new Menu();
 	MenuItem comp_run = new MenuItem();
 	MenuItem comp_step = new MenuItem();
-	MenuItem comp_reset = new MenuItem();
 	MenuItem comp_settings = new MenuItem();
 	Menu help_menu = new Menu();
 	MenuItem help_about = new MenuItem();
@@ -362,28 +361,6 @@ public class TSPDisplay extends JFrame {
 		plot[0].setCursor(c); // restore cursor setting
 	}
 
-	/**
-	 * restores the population to what it was before the
-	 * run or step commands altered it.
-	 *
-	 * @return nothing
-	 */
-	void comp_reset_action() {
-		Cursor c = plot[0].getCursor(); // save sursor setting
-
-		// set wait cursor
-		plot[0].setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-
-		myGen = new Generation(myGen.firstRoute);
-		for (int i = 0; i < pop_size; i++) {
-			Graphics g = plot[i].getGraphics();
-			display_status(i);
-			plot[i].update(g);
-		}
-
-		plot[0].setCursor(c); // restore cursor setting
-	}
-
 	public void display_status(int i) {
 		if (myGen != null) {
 			label[i].setText("" + myGen.chromosomes[i].fitness());
@@ -472,10 +449,6 @@ public class TSPDisplay extends JFrame {
 		comp_step.setLabel("Step");
 		comp_step.setShortcut(new MenuShortcut(KeyEvent.VK_X, false));
 
-		comp_menu.add(comp_reset);
-		comp_reset.setLabel("Reset");
-		comp_reset.setShortcut(new MenuShortcut(KeyEvent.VK_Z, false));
-
 		comp_menu.add(comp_settings);
 		comp_settings.setLabel("Settings");
 
@@ -492,7 +465,6 @@ public class TSPDisplay extends JFrame {
 		action_interface action = new action_interface();
 		file_exit.addActionListener(action);
 		comp_run.addActionListener(action);
-		comp_reset.addActionListener(action);
 		comp_step.addActionListener(action);
 		comp_settings.addActionListener(action);
 
@@ -520,8 +492,6 @@ public class TSPDisplay extends JFrame {
 			else 
 			if (object == comp_run)
 				comp_run_action();
-			else if (object == comp_reset)
-				comp_reset_action();
 			else if (object == comp_step)
 				comp_step_action();
 			else if (object == comp_settings)
