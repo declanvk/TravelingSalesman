@@ -55,7 +55,7 @@ public class City {
 	}
 
 	public String toString() {
-		return location.toString();
+		return "(" + location.x + "," + location.y + ")";
 	}
 
 	public int getxLoc() {
@@ -67,10 +67,6 @@ public class City {
 	}
 
 	public void setNeighbors(int key, City p, City n) {
-		if (neighbors.containsKey(key))
-			System.out.println("(" + location.x + "," + location.y + ")" + "Contains " + key);
-		else
-			System.out.println("(" + location.x + "," + location.y + ")" + "Dontains " + key);
 		neighbors.put(key, new City.CLink(p, n));
 	}
 

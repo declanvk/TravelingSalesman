@@ -1,4 +1,7 @@
+import java.awt.List;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -46,7 +49,6 @@ public class Chromosome implements Comparable<Chromosome> {
 			myGenes.set(geneA, myGenes.get(geneB));
 			myGenes.set(geneB, tempNode);
 		}
-		// TODO
 		return new Chromosome(myGenes);
 	}
 
@@ -63,6 +65,9 @@ public class Chromosome implements Comparable<Chromosome> {
 			return null;
 
 		HashSet<City>[] containers = new HashSet[other.cities.size()];
+		City[] mapper = new City[other.cities.size()];
+		for (int i = 0; i < containers.length; i++)
+			containers[i] = new HashSet<City>();
 
 		int i = 0;
 		City.CLink aLink = null;
@@ -75,6 +80,8 @@ public class Chromosome implements Comparable<Chromosome> {
 			containers[i].add(aLink.getPrev());
 			containers[i].add(bLink.getNext());
 			containers[i].add(bLink.getPrev());
+
+			mapper[i] = o;
 
 			i++;
 		}
@@ -95,10 +102,19 @@ public class Chromosome implements Comparable<Chromosome> {
 					else if (chosen.size() > o.size())
 						chosen = o;
 				}
-			int p = 0;
-			do {
-				n = (City) chosen.toArray()[p];
-			} while (k.contains(n));
+			if (chosen == null) {
+				int p = 0;
+				do {
+					p = rGen.nextInt(containers.length);
+					chosen = containers[p];
+				} while(k.contains(mapper[p]));
+			}
+
+			int j = 0;
+			for (; j < containers.length; j++)
+				if (containers[j] == chosen)
+					break;
+			n = mapper[j];
 		}
 		return new Chromosome(k);
 	}
@@ -112,11 +128,9 @@ public class Chromosome implements Comparable<Chromosome> {
 
 		for (int i = 0; i < cities.size(); i++) {
 			temp = cities.get(i);
-			temp.setNeighbors(
-					this.hashCode(),
-					cities.get(((((i - 1) % cities.size()) + cities.size()) % cities
-							.size())),
-					cities.get(((((i + 1) % cities.size()) + cities.size()) % cities
+			temp.setNeighbors(this.hashCode(), cities.get(((((i - 1) % cities
+					.size()) + cities.size()) % cities.size())), cities
+					.get(((((i + 1) % cities.size()) + cities.size()) % cities
 							.size())));
 		}
 	}
@@ -124,7 +138,8 @@ public class Chromosome implements Comparable<Chromosome> {
 	private double calculateFitness() {
 		double totalDistance = 0;
 		for (int i = 0; i < cities.size(); i++)
-			totalDistance += cities.get(i).getNeighbors(this.hashCode()).getDistNext();
+			totalDistance += cities.get(i).getNeighbors(this.hashCode())
+					.getDistNext();
 
 		return totalDistance;
 	}
@@ -133,21 +148,10 @@ public class Chromosome implements Comparable<Chromosome> {
 		return new Double(pathLength).toString();
 	}
 
-	public void mutate(float mutationPercent) {
-		int numToMutate = Math.round(mutationPercent * cities.size());
-		int a = 0;
-		int b = 0;
-		for (int i = 0; i < numToMutate; i++) {
-			do {
-				a = rGen.nextInt(cities.size());
-				b = rGen.nextInt(cities.size());
-			} while (a != b);
-			City temp = cities.get(b);
-			cities.set(b, cities.get(a));
-			cities.set(a, temp);
-		}
-		
-		recalculateNeighbors();
+	public Chromosome mutate() {
+		ArrayList<City> temp = (ArrayList<City>) this.cities.clone();
+		Collections.shuffle(temp);
+		return new Chromosome(temp);
 	}
 
 	public void clearCities() {

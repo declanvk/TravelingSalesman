@@ -16,7 +16,6 @@ class Generation {
 
 	private static final int MUTATION_CHANCE = 100;
 	private static final int MUTATION_NUM = 1;
-	private static final float MUTATION_PERCENT = (float) 0.07;
 	private static final int SELECT = 8;
 	public static int POP_SIZE; // # of chromosomes in a generation
 	public static boolean MUTATION, ELITISM;
@@ -71,9 +70,9 @@ class Generation {
 	public void breed(Chromosome[] par) {
 		int i = 0;
 		Chromosome[] temp = new Chromosome[(SELECT * SELECT) - SELECT];
-		for(int x = 0; x < par.length; x++)
-			for(int y = 0; y < par.length; y++)
-				if(x != y)
+		for (int x = 0; x < par.length; x++)
+			for (int y = 0; y < par.length; y++)
+				if (x != y)
 					temp[i++] = par[x].breed(par[y]);
 		Arrays.sort(temp);
 		System.arraycopy(temp, 0, chromosomes, SELECT, SELECT);
@@ -81,14 +80,16 @@ class Generation {
 
 	public void mutate() {
 		if (rGen.nextInt(MUTATION_CHANCE) < 10)
-			for (int i = 0; i < MUTATION_NUM; i++)
-				chromosomes[rGen.nextInt(chromosomes.length)].mutate(MUTATION_PERCENT);
+			for (int i = 0; i < MUTATION_NUM; i++) {
+				int index = rGen.nextInt(chromosomes.length);
+				chromosomes[index] = chromosomes[index].mutate();
+			}
 	}
 
 	public Chromosome[] select() {
 		Chromosome[] temp = new Chromosome[SELECT];
 		System.arraycopy(chromosomes, 0, temp, 0, SELECT);
-		for(int i = SELECT; i < chromosomes.length; i++)
+		for (int i = SELECT; i < chromosomes.length; i++)
 			chromosomes[i].clearCities();
 		return temp;
 	}
