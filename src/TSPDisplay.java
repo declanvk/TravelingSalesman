@@ -176,7 +176,7 @@ public class TSPDisplay extends JFrame {
 					Graphics g = parent.plot[0].getGraphics();
 					mouse = e.getPoint();
 					points.add(new City(mouse.x, mouse.y));
-					route = new Chromosome(points);
+					route = new Chromosome(points.toArray(new City[points.size()]));
 					myGen = new Generation(route);					
 					route_length = myGen.getFitness();
 					parent.plot[0].update(g);

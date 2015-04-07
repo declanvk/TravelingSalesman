@@ -1,8 +1,7 @@
-import java.awt.List;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.Map.Entry;
 import java.util.Random;
 
 public class Chromosome implements Comparable<Chromosome> {
@@ -11,45 +10,27 @@ public class Chromosome implements Comparable<Chromosome> {
 	public static int POP_SIZE;
 	public static boolean MUTATION, ELITISM;
 
-	// the genes
-	private final ArrayList<City> cities;
-
+	private final City[] cities;
 	private final Random rGen = new Random();
-	private double pathLength;
+	private final double pathLength;
 
-	public Chromosome(ArrayList<City> or) {
-		this.cities = or;
-		recalculateNeighbors();
+	public Chromosome(City[] t) {
+		this.cities = t;
 		this.pathLength = calculateFitness();
 	}
 
 	public City getCity(int i) {
-		return cities.get(i);
+		return cities[i];
 	}
 
 	public int size() {
-		return cities.size();
+		return cities.length;
 	}
 
-	/*
-	 * forms a random arrangement of City objects for a new Chromosome
-	 */
 	public Chromosome scramble() {
-		ArrayList<City> myGenes = new ArrayList<City>();
-
-		for (int i = 0; i < cities.size(); i++) {
-			myGenes.add(cities.get(i));
-		}
-
-		for (int i = 0; i < 50; i++) {
-			// swap two genes at random
-			int geneA = rGen.nextInt(cities.size());
-			int geneB = rGen.nextInt(cities.size());
-			City tempNode = myGenes.get(geneA);
-			myGenes.set(geneA, myGenes.get(geneB));
-			myGenes.set(geneB, tempNode);
-		}
-		return new Chromosome(myGenes);
+		City[] temp = cities.clone();
+		fisherYatesShuffle(temp);
+		return new Chromosome(temp);
 	}
 
 	@Override
@@ -60,86 +41,74 @@ public class Chromosome implements Comparable<Chromosome> {
 			return o.fitness() > this.fitness() ? -1 : 1;
 	}
 
-	public Chromosome breed(Chromosome other) {
-		if (this.cities.size() != other.cities.size())
-			return null;
-
-		HashSet<City>[] containers = new HashSet[other.cities.size()];
-		City[] mapper = new City[other.cities.size()];
-		for (int i = 0; i < containers.length; i++)
-			containers[i] = new HashSet<City>();
-
-		int i = 0;
-		City.CLink aLink = null;
-		City.CLink bLink = null;
-		for (City o : other.cities) {
-			aLink = o.getNeighbors(this.hashCode());
-			bLink = o.getNeighbors(other.hashCode());
-
-			containers[i].add(aLink.getNext());
-			containers[i].add(aLink.getPrev());
-			containers[i].add(bLink.getNext());
-			containers[i].add(bLink.getPrev());
-
-			mapper[i] = o;
-
-			i++;
-		}
-
-		HashSet<City> chosen = null;
-		ArrayList<City> k = new ArrayList<>();
-		City n = rGen.nextBoolean() ? this.cities.get(0) : other.cities.get(0);
-		while (k.size() < other.cities.size()) {
-			k.add(n);
-			chosen = null;
-			for (HashSet<City> o : containers)
-				if (o.contains(n)) {
-					o.remove(n);
-					if (chosen == null)
-						chosen = o;
-					else if (chosen.size() == o.size())
-						chosen = rGen.nextBoolean() ? chosen : o;
-					else if (chosen.size() > o.size())
-						chosen = o;
-				}
-			if (chosen == null) {
-				int p = 0;
-				do {
-					p = rGen.nextInt(containers.length);
-					chosen = containers[p];
-				} while(k.contains(mapper[p]));
+	private void fillSets(HashMap<City, HashSet<City>> a, Chromosome c) {
+		HashSet<City> temp = null;
+		City o = null;
+		for (int i = 0; i < c.cities.length; i++) {
+			o = c.cities[i];
+			temp = a.get(o);
+			if (temp == null) {
+				a.put(o, new HashSet<City>());
+				temp = a.get(o);
 			}
 
-			int j = 0;
-			for (; j < containers.length; j++)
-				if (containers[j] == chosen)
-					break;
-			n = mapper[j];
+			temp.add(c.cities[wrap(i + 1, c.cities.length)]);
+			temp.add(c.cities[wrap(i - 1, c.cities.length)]);
 		}
-		return new Chromosome(k);
+	}
+
+	public Chromosome breed(Chromosome other) {
+		if (this.cities.length != other.cities.length)
+			return null;
+
+		HashMap<City, HashSet<City>> a = new HashMap<>();
+		fillSets(a, other);
+		fillSets(a, this);
+
+		City chosen = null;
+		LinkedHashSet<City> k = new LinkedHashSet<City>();
+		City n = rGen.nextBoolean() ? this.cities[0] : other.cities[0];
+		while (k.size() < other.cities.length) {
+			k.add(n);
+			chosen = null;
+			for (Entry<City, HashSet<City>> o : a.entrySet())
+				if (o.getValue().contains(n)) {
+					o.getValue().remove(n);
+					if (chosen == null)
+						chosen = o.getKey();
+					else if (a.get(chosen).size() == o.getValue().size())
+						chosen = rGen.nextBoolean() ? chosen : o.getKey();
+					else if (a.get(chosen).size() > o.getValue().size())
+						chosen = o.getKey();
+				}
+
+			if (chosen == null)
+				for (Entry<City, HashSet<City>> h : a.entrySet())
+					if (k.contains(h.getKey()))
+						continue;
+					else {
+						chosen = h.getKey();
+						break;
+					}
+
+			n = chosen;
+		}
+		return new Chromosome(k.toArray(new City[other.cities.length]));
 	}
 
 	public double fitness() {
 		return pathLength;
 	}
 
-	private void recalculateNeighbors() {
-		City temp = null;
-
-		for (int i = 0; i < cities.size(); i++) {
-			temp = cities.get(i);
-			temp.setNeighbors(this.hashCode(), cities.get(((((i - 1) % cities
-					.size()) + cities.size()) % cities.size())), cities
-					.get(((((i + 1) % cities.size()) + cities.size()) % cities
-							.size())));
-		}
+	private int wrap(int ind, int len) {
+		return (((ind) % len) + len) % len;
 	}
 
 	private double calculateFitness() {
 		double totalDistance = 0;
-		for (int i = 0; i < cities.size(); i++)
-			totalDistance += cities.get(i).getNeighbors(this.hashCode())
-					.getDistNext();
+		for (int i = 0; i < cities.length; i++)
+			totalDistance += cities[wrap(i + 1, cities.length)]
+					.distanceTo(cities[i]);
 
 		return totalDistance;
 	}
@@ -148,14 +117,14 @@ public class Chromosome implements Comparable<Chromosome> {
 		return new Double(pathLength).toString();
 	}
 
-	public Chromosome mutate() {
-		ArrayList<City> temp = (ArrayList<City>) this.cities.clone();
-		Collections.shuffle(temp);
-		return new Chromosome(temp);
-	}
+	private <T> void fisherYatesShuffle(T[] t) {
+		for (int i = 0; i < t.length; i++) {
+			int j = rGen.nextInt(t.length - i);
 
-	public void clearCities() {
-		for (City c : cities)
-			c.removeNeighbor(this.hashCode());
+			// swap
+			T temp = t[i];
+			t[i] = t[j];
+			t[j] = temp;
+		}
 	}
 }
