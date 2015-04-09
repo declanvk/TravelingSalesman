@@ -39,7 +39,7 @@ public class TSPDisplay extends JFrame {
 	Menu comp_menu = new Menu();
 	MenuItem comp_run = new MenuItem();
 	MenuItem comp_step = new MenuItem();
-	MenuItem comp_settings = new MenuItem();
+//	MenuItem comp_settings = new MenuItem();
 	Menu help_menu = new Menu();
 	MenuItem help_about = new MenuItem();
 
@@ -47,7 +47,7 @@ public class TSPDisplay extends JFrame {
 	private int pop_size = 16;
 	private int plotsHorizontal = 4;
 	private int plotsVertical = 4;
-	private int NUM_IN_RUN = 500;
+	private int NUM_IN_RUN = 10000;
 	private int eliteIndex, mutateIndex=0;
 	private boolean mutateStatus = true;
 	private boolean eliteStatus = true;
@@ -61,7 +61,7 @@ public class TSPDisplay extends JFrame {
 	private double route_length = 0; 				// length of route
 
 	private Generation myGen;
-	private ArrayList<City> points = new ArrayList<City>(); 
+	private ArrayList<City> points = new ArrayList<City>();
 
 	public TSPDisplay(int p, int pVert, int pHor, boolean e, boolean m) {
 		pop_size = p;
@@ -69,8 +69,6 @@ public class TSPDisplay extends JFrame {
 		plotsVertical = pVert;
 		mutateStatus = m;
 		eliteStatus = e;
-
-		myGen = new Generation();
 		
 		setLocation(100, 100);
 		set_menus(); // setup the menu bar
@@ -251,7 +249,7 @@ public class TSPDisplay extends JFrame {
 			g.drawLine(getWidth() - 2, 0, getWidth() - 2, getHeight() - 1);
 			g.drawLine(0, getHeight() - 1, getWidth() - 2, getHeight() - 1);
 
-			n = myGen.chromosomes.length; // number of city's in list
+			n = myGen == null ? 0 : myGen.size(); // number of city's in list
 
 			if (n == 0 || route==null) // no points to plot
 				return;
@@ -303,7 +301,7 @@ public class TSPDisplay extends JFrame {
 	 *
 	 * @return nothing
 	 */
-	void comp_run_action() {
+	void comp_run_action(int run) {
 		Cursor c = plot[0].getCursor(); // save cursor setting
 
 		Graphics g = plot[0].getGraphics();
@@ -325,7 +323,7 @@ public class TSPDisplay extends JFrame {
 			}
 			route_length = myGen.chromosomes[0].fitness();
 
-		} while (myGen.number % NUM_IN_RUN > 0);
+		} while (myGen.number % run > 0);
 
 		plot[0].setCursor(c); // restore cursor setting
 	}
@@ -392,35 +390,34 @@ public class TSPDisplay extends JFrame {
 	 *
 	 * @return nothing
 	 */
-	private void comp_settings_action() {
-		
-		try {
-			SettingsDialog dialog = new SettingsDialog(this, true);
-			dialog.set_mutation(mutateStatus);
-			dialog.set_elitism(eliteStatus);
-			dialog.set_num_chrom(pop_size);
-			dialog.set_num_in_row(plotsHorizontal);
-			dialog.set_num_in_col(plotsVertical);
-			dialog.set_num_in_Run(NUM_IN_RUN);
-			dialog.setVisible(true); // display dialog
-
-			pop_size = dialog.get_numberOfChromosomes();
-			plotsVertical = dialog.get_numInCol();
-			plotsHorizontal = dialog.get_numInRow();
-			mutateStatus = dialog.get_mutation();
-			eliteStatus = dialog.get_elitism();
-			NUM_IN_RUN = dialog.get_numInRun();
-
-			Generation.POP_SIZE=pop_size;
-			Generation.ELITISM = eliteStatus;
-			Generation.MUTATION = mutateStatus;
-			myGen = new Generation(myGen.firstRoute);
-			dispose();
-			setNewPlotAreas();
-			
-		} catch (Exception e) 
-		{}
-	}
+//	private void comp_settings_action() {
+//		
+//		try {
+//			SettingsDialog dialog = new SettingsDialog(this, true);
+//			dialog.set_mutation(mutateStatus);
+//			dialog.set_elitism(eliteStatus);
+//			dialog.set_num_chrom(pop_size);
+//			dialog.set_num_in_row(plotsHorizontal);
+//			dialog.set_num_in_col(plotsVertical);
+//			dialog.set_num_in_Run(NUM_IN_RUN);
+//			dialog.setVisible(true); // display dialog
+//
+//			pop_size = dialog.get_numberOfChromosomes();
+//			plotsVertical = dialog.get_numInCol();
+//			plotsHorizontal = dialog.get_numInRow();
+//			mutateStatus = dialog.get_mutation();
+//			eliteStatus = dialog.get_elitism();
+//			NUM_IN_RUN = dialog.get_numInRun();
+//
+//			Generation.POP_SIZE=pop_size;
+//			Generation.ELITISM = eliteStatus;
+//			Generation.MUTATION = mutateStatus;
+//			dispose();
+//			setNewPlotAreas();
+//			
+//		} catch (Exception e) 
+//		{}
+//	}
 
 
 	/**
@@ -448,8 +445,8 @@ public class TSPDisplay extends JFrame {
 		comp_step.setLabel("Step");
 		comp_step.setShortcut(new MenuShortcut(KeyEvent.VK_X, false));
 
-		comp_menu.add(comp_settings);
-		comp_settings.setLabel("Settings");
+//		comp_menu.add(comp_settings);
+//		comp_settings.setLabel("Settings");
 
 		main_menu.add(comp_menu);
 
@@ -465,7 +462,7 @@ public class TSPDisplay extends JFrame {
 		file_exit.addActionListener(action);
 		comp_run.addActionListener(action);
 		comp_step.addActionListener(action);
-		comp_settings.addActionListener(action);
+//		comp_settings.addActionListener(action);
 
 		help_about.addActionListener(action);
 	}
@@ -490,11 +487,11 @@ public class TSPDisplay extends JFrame {
 				file_exit_action();
 			else 
 			if (object == comp_run)
-				comp_run_action();
+				comp_run_action(NUM_IN_RUN);
 			else if (object == comp_step)
 				comp_step_action();
-			else if (object == comp_settings)
-				comp_settings_action();
+//			else if (object == comp_settings)
+//				comp_settings_action();
 		}
 	}
 

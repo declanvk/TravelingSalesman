@@ -19,23 +19,13 @@ class Generation {
 	private static final int SELECT_NUM = 8;
 	public static int POP_SIZE; // # of chromosomes in a generation
 	public static boolean MUTATION, ELITISM;
-	public Chromosome[] chromosomes;
-	public Chromosome firstRoute;
-	public Chromosome bestRoute;
-	private Random rGen = new Random();
+	public final Chromosome[] chromosomes;
+	private final Random rGen = new Random();
 	public int number = 0;
 
-	public Generation() {
-		chromosomes = new Chromosome[POP_SIZE];
-		bestRoute = null;
-		firstRoute = null;
-	}
-
 	public Generation(Chromosome ch) {
-		chromosomes = new Chromosome[POP_SIZE];
+		this.chromosomes = new Chromosome[POP_SIZE];
 		chromosomes[0] = ch;
-		bestRoute = ch;
-		firstRoute = ch;
 		for (int i = 1; i < POP_SIZE; i++)
 			chromosomes[i] = ch.scramble();
 	}
@@ -46,21 +36,16 @@ class Generation {
 
 		breed(select());
 
+		rank();
+
 		mutate();
 
 		rank();
-
-		bestRoute = chromosomes[0];
 	}
 
 	public double getFitness() {
-		if (chromosomes[0] == null)
-			return 0;
-		else {
-			rank();
-			return chromosomes[0].fitness();
-		}
-
+		rank();
+		return chromosomes[0].fitness();
 	}
 
 	private void rank() {
@@ -69,7 +54,8 @@ class Generation {
 
 	public void breed(Chromosome[] par) {
 		int i = 0;
-		Chromosome[] temp = new Chromosome[(SELECT_NUM * SELECT_NUM) - SELECT_NUM];
+		Chromosome[] temp = new Chromosome[(SELECT_NUM * SELECT_NUM)
+				- SELECT_NUM];
 		for (int x = 0; x < par.length; x++)
 			for (int y = 0; y < par.length; y++)
 				if (x != y)
@@ -79,11 +65,17 @@ class Generation {
 	}
 
 	public void mutate() {
-		if (rGen.nextInt(MUTATION_CHANCE) < 10)
+		if (rGen.nextInt(MUTATION_CHANCE) < 10) {
+			Chromosome[] temp = new Chromosome[MUTATION_NUM
+					+ chromosomes.length];
 			for (int i = 0; i < MUTATION_NUM; i++) {
 				int index = rGen.nextInt(chromosomes.length);
-				chromosomes[index] = chromosomes[index].scramble();
+				temp[chromosomes.length] = chromosomes[index].mutate();
 			}
+			System.arraycopy(chromosomes, 0, temp, 0, chromosomes.length);
+			Arrays.sort(temp);
+			System.arraycopy(temp, 0, chromosomes, 0, chromosomes.length);
+		}
 	}
 
 	public Chromosome[] select() {
@@ -97,5 +89,10 @@ class Generation {
 		for (int i = 0; i < chromosomes.length; i++)
 			s += chromosomes[i].fitness() + "\t";
 		return s;
+	}
+
+	public int size() {
+		// TODO Auto-generated method stub
+		return chromosomes.length;
 	}
 }

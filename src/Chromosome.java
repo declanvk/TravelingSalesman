@@ -93,6 +93,7 @@ public class Chromosome implements Comparable<Chromosome> {
 
 			n = chosen;
 		}
+
 		return new Chromosome(k.toArray(new City[other.cities.length]));
 	}
 
@@ -126,5 +127,21 @@ public class Chromosome implements Comparable<Chromosome> {
 			t[i] = t[j];
 			t[j] = temp;
 		}
+	}
+
+	public Chromosome mutate() {
+		City[] temp = cities.clone();
+		int a = rGen.nextInt(cities.length);
+		int b = 0;
+		do {
+			b = rGen.nextInt(cities.length);
+		} while (b == a);
+		
+		//Swap
+		City t = temp[a];
+		temp[a] = temp[b];
+		temp[b] = t;
+
+		return new Chromosome(temp);
 	}
 }
